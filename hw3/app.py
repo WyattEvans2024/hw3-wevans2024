@@ -103,7 +103,20 @@ def main() -> None:
 				{"messages": [{"role": "user", "content": user_input}]}
 			)
 			final_message = result["messages"][-1]
-			print(f"\nAgent> {final_message.content}\n")
+			response_content = final_message.content
+			if isinstance(response_content, list):
+				# Gemini may return content blocks; display only their readable text.
+				text_parts = []
+				for block in response_content:
+					if isinstance(block, str):
+						text_parts.append(block)
+					elif isinstance(block, dict) and block.get("type") == "text":
+						block_text = block.get("text")
+						if isinstance(block_text, str):
+							text_parts.append(block_text)
+				response_content = "\n".join(text_parts)
+
+			print(f"\nAgent> {response_content}\n")
 		except Exception as exc:
 			# Report model or agent errors and keep the session available.
 			print(f"\nAgent error: {exc}\n")
